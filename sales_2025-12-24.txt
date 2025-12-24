@@ -9,3 +9,14 @@ Method: card
 Employee: Tan Guan Han (C60)
 -----------------------------------
 
+=== SALE RECEIPT ===
+Date: 2025-12-24
+Time: 09:54 am
+Customer: Zikri bin Abdullah
+Items Purchased:
+- SW2500-1 (Qty: 1) RM845.0
+Total Price: RM845.0
+Method: CARD
+Employee: Tan Guan Han (C60)
+-----------------------------------
+
