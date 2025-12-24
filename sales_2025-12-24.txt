@@ -1,0 +1,11 @@
+=== SALE RECEIPT ===
+Date: 2025-12-24
+Time: 09:31 am
+Customer: Sarah Khadija
+Items Purchased:
+- SW-200 (Qty: 1) RM867.0
+Total Price: RM867.0
+Method: card
+Employee: Tan Guan Han (C60)
+-----------------------------------
+
