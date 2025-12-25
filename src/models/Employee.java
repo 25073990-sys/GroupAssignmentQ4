@@ -4,8 +4,8 @@ public class Employee {
 
     private String id;
     private String name;
-    private String password;
     private String role;
+    private String password;
 
     public Employee(String id, String name, String password, String role) {
         this.id = id;

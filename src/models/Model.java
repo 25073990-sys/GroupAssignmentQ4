@@ -1,18 +1,21 @@
 package models;
 
 public class Model {
-    private String modelName; // e.g., DW2300-1
+    private String modelName;
+    private String dialcolour;// e.g., DW2300-1
     private double price;
     private int stockCount;   // Current stock in YOUR store
 
-    public Model(String modelName, double price, int stockCount) {
+    public Model(String modelName,String dialcolour, double price, int stockCount) {
         this.modelName = modelName;
+        this.dialcolour = dialcolour;
         this.price = price;
         this.stockCount = stockCount;
     }
 
     // Getters and Setters
     public String getModelName() { return modelName; }
+    public String getDialColour() { return dialcolour; }
     public double getPrice() { return price; }
     public int getStockCount() { return stockCount; }
 
@@ -27,6 +30,6 @@ public class Model {
 
     @Override
     public String toString() {
-        return modelName + "," + price + "," + stockCount;
+        return modelName + "(" + dialcolour + ") -RM" + price + "," + "[Stock: " + stockCount + "]";
     }
 }
