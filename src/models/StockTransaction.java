@@ -4,174 +4,46 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StockTransaction {
     private String transactionId;
-    private String transactionType; // "STOCK_IN" or "STOCK_OUT" or "MORNING_COUNT" or "NIGHT_COUNT"
-    private LocalDateTime dateTime;
+    private String type;
+    private LocalDateTime timestamp;
     private String fromOutlet;
     private String toOutlet;
-    private List<StockItem> items;
-    private String employeeId;
     private String employeeName;
-    private int totalQuantity;
-    private String notes;
+    private List<StockItem> items;
 
-    // Inner class for stock items
     public static class StockItem {
-        private String modelCode;
         private String modelName;
         private int quantity;
-        private String status; // "MATCH" or "MISMATCH" for stock counts
-        private int storedQuantity; // For stock count comparison
-
-        public StockItem(String modelCode, String modelName, int quantity) {
-            this.modelCode = modelCode;
-            this.modelName = modelName;
-            this.quantity = quantity;
-        }
-
-        // Getters and Setters
-        public String getModelCode() { return modelCode; }
-        public void setModelCode(String modelCode) { this.modelCode = modelCode; }
-
+        public StockItem(String modelName, int qty) { this.modelName = modelName; this.quantity = qty; }
         public String getModelName() { return modelName; }
-        public void setModelName(String modelName) { this.modelName = modelName; }
-
         public int getQuantity() { return quantity; }
-        public void setQuantity(int quantity) { this.quantity = quantity; }
-
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-
-        public int getStoredQuantity() { return storedQuantity; }
-        public void setStoredQuantity(int storedQuantity) { this.storedQuantity = storedQuantity; }
     }
 
-    // Constructor
-    public StockTransaction(String transactionType, String fromOutlet, String toOutlet,
-                            String employeeId, String employeeName) {
-        this.transactionId = generateTransactionId();
-        this.transactionType = transactionType;
-        this.dateTime = LocalDateTime.now();
-        this.fromOutlet = fromOutlet;
-        this.toOutlet = toOutlet;
-        this.employeeId = employeeId;
-        this.employeeName = employeeName;
+    public StockTransaction(String type, String from, String to, String empName) {
+        this.timestamp = LocalDateTime.now();
+        this.transactionId = "ST" + timestamp.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        this.type = type;
+        this.fromOutlet = from;
+        this.toOutlet = to;
+        this.employeeName = empName;
         this.items = new ArrayList<>();
-        this.totalQuantity = 0;
     }
 
-    // Generate unique transaction ID
-    private String generateTransactionId() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        return "ST" + LocalDateTime.now().format(formatter);
-    }
+    public void addItem(String model, int qty) { items.add(new StockItem(model, qty)); }
 
-    // Add item to transaction
-    public void addItem(String modelCode, String modelName, int quantity) {
-        StockItem item = new StockItem(modelCode, modelName, quantity);
-        items.add(item);
-        totalQuantity += quantity;
-    }
-
-    // Add item with stock count comparison
-    public void addItemWithCount(String modelCode, String modelName, int counted, int stored) {
-        StockItem item = new StockItem(modelCode, modelName, counted);
-        item.setStoredQuantity(stored);
-        item.setStatus(counted == stored ? "MATCH" : "MISMATCH");
-        items.add(item);
-    }
-
-    // Calculate total quantity
-    public void calculateTotalQuantity() {
-        totalQuantity = 0;
-        for (StockItem item : items) {
-            totalQuantity += item.getQuantity();
-        }
-    }
-
-    // Get formatted date and time
-    public String getFormattedDate() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return dateTime.format(formatter);
-    }
-
-    public String getFormattedTime() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
-        return dateTime.format(formatter);
-    }
-
-    public String getFormattedDateTime() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
-        return dateTime.format(formatter);
-    }
-
-    // Getters and Setters
-    public String getTransactionId() { return transactionId; }
-    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
-
-    public String getTransactionType() { return transactionType; }
-    public void setTransactionType(String transactionType) { this.transactionType = transactionType; }
-
-    public LocalDateTime getDateTime() { return dateTime; }
-    public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
-
+    public String getType() { return type; }
     public String getFromOutlet() { return fromOutlet; }
-    public void setFromOutlet(String fromOutlet) { this.fromOutlet = fromOutlet; }
-
     public String getToOutlet() { return toOutlet; }
-    public void setToOutlet(String toOutlet) { this.toOutlet = toOutlet; }
-
-    public List<StockItem> getItems() { return items; }
-    public void setItems(List<StockItem> items) { this.items = items; }
-
-    public String getEmployeeId() { return employeeId; }
-    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
-
     public String getEmployeeName() { return employeeName; }
-    public void setEmployeeName(String employeeName) { this.employeeName = employeeName; }
+    public List<StockItem> getItems() { return items; }
+    public int getTotalQuantity() { return items.stream().mapToInt(StockItem::getQuantity).sum(); }
 
-    public int getTotalQuantity() { return totalQuantity; }
-    public void setTotalQuantity(int totalQuantity) { this.totalQuantity = totalQuantity; }
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-
-    // Convert to CSV format for saving
     public String toCSV() {
-        StringBuilder itemsStr = new StringBuilder();
-        for (int i = 0; i < items.size(); i++) {
-            StockItem item = items.get(i);
-            itemsStr.append(item.getModelCode()).append(":").append(item.getQuantity());
-            if (i < items.size() - 1) {
-                itemsStr.append(";");
-            }
-        }
-
-        return String.join(",",
-                transactionId,
-                transactionType,
-                getFormattedDateTime(),
-                fromOutlet,
-                toOutlet,
-                itemsStr.toString(),
-                employeeId,
-                employeeName,
-                String.valueOf(totalQuantity),
-                notes != null ? notes : ""
-        );
-    }
-
-    @Override
-    public String toString() {
-        return "StockTransaction{" +
-                "transactionId='" + transactionId + '\'' +
-                ", type='" + transactionType + '\'' +
-                ", dateTime=" + getFormattedDateTime() +
-                ", from='" + fromOutlet + '\'' +
-                ", to='" + toOutlet + '\'' +
-                ", totalQuantity=" + totalQuantity +
-                '}';
+        String details = items.stream().map(i -> i.getModelName() + ":" + i.getQuantity()).collect(Collectors.joining(";"));
+        return String.join(",", transactionId, type, timestamp.toString(), fromOutlet, toOutlet, employeeName, String.valueOf(getTotalQuantity()), details);
     }
 }
