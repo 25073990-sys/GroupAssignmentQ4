@@ -9,7 +9,7 @@ import java.time.LocalTime;
 
 public class AttendanceService {
 
-    private static final String FILE_NAME = "attendance.csv";
+    private static final String FILE_NAME = "data/attendance.csv";
 
     public void clockIn(String employeeId) {
         String date = LocalDate.now().toString();

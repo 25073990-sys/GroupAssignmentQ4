@@ -10,7 +10,7 @@ public class AuthService {
     private List<Employee> employeeList;
 
     public AuthService() {
-        employeeList = new ArrayList<>();
+        this.employeeList = FileService.loadEmployees();
     }
 
     // register a new employee into the system
