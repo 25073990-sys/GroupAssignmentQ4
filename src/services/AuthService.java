@@ -15,18 +15,28 @@ public class AuthService {
 
     // register a new employee into the system
     public boolean register(Employee employee) {
-        if (employee == null) return false;
+        if (employee == null || currentUser == null) return false;
 
-        // check duplicate ID
+        // Only manager can register
+        if (!currentUser.getRole().equalsIgnoreCase("Manager")) {
+            return false;
+        }
+
+        // Check duplicate ID
         for (Employee e : employeeList) {
             if (e.getId().equals(employee.getId())) {
-                return false; // ID already exists
+                return false;
             }
         }
 
         employeeList.add(employee);
+
+        // Save to CSV
+        FileService.appendEmployee(employee);
+
         return true;
     }
+
 
     //log in using Employee object & pwd
     public boolean login(String id, String password) {

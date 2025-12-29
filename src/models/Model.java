@@ -1,50 +1,58 @@
 package models;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Model {
+
     private String modelName;
-    private String dialcolour;// e.g., DW2300-1
+    private String dialColour;
     private double price;
-    private int [] outletStocks = new int [10]; //Index 0 = C60, 1=C61...
 
-    public Model(String modelName,String dialcolour, double price) {
+    // Stock per outlet (C60, C61, ...)
+    private Map<String, Integer> outletStocks;
+
+    public Model(String modelName, String dialColour, double price) {
         this.modelName = modelName;
-        this.dialcolour = dialcolour;
+        this.dialColour = dialColour;
         this.price = price;
+        this.outletStocks = new HashMap<>();
     }
 
-    // Helper method to convert "C60" into index 0, "C61" into index 1, etc.
-    private int getIndexFromCode(String code) {
-        // Extracts the number from "C60", "C61", etc., and subtracts 60
-        // C60 -> 60 - 60 = index 0
-        // C69 -> 69 - 60 = index 9
-        return Integer.parseInt(code.substring(1)) - 60;
+    // ===== Stock methods (used by StockService & FileService) =====
+
+    public int getStock(String outletCode) {
+        return outletStocks.getOrDefault(outletCode, 0);
     }
 
-    public void addStock(String outletCode, int quantity) {
-        int index = getIndexFromCode(outletCode);
-        outletStocks[index] = quantity;
+    public void adjustStock(String outletCode, int quantity) {
+        int current = getStock(outletCode);
+        outletStocks.put(outletCode, current + quantity);
     }
 
-    public int getStockForOutlet(String outletCode) {
-        return outletStocks[getIndexFromCode(outletCode)];
+    public void setStock(String outletCode, int quantity) {
+        outletStocks.put(outletCode, quantity);
     }
 
-    public void updateStock(String outletCode, int change) {
-        int index = getIndexFromCode(outletCode);
-        this.outletStocks[index] += change;
+    // ===== Getters =====
+    public String getModelName() {
+        return modelName;
     }
 
-    public String toCSVRow() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(modelName).append(",").append(dialcolour).append(",").append(price);
-        for (int stock : outletStocks) {
-            sb.append(",").append(stock);
-        }
-        return sb.toString();
+    public String getDialColour() {
+        return dialColour;
     }
 
-    // Standard Getters
-    public String getName() { return modelName; }
-    public String getColour() { return dialcolour; }
-    public double getPrice() { return price; }
+    public double getPrice() {
+        return price;
+    }
+
+    public Map<String, Integer> getOutletStocks() {
+        return outletStocks;
+    }
+
+    @Override
+    public String toString() {
+        return modelName + " (" + dialColour + ") - RM" + price;
+    }
 }
