@@ -1,35 +1,38 @@
 package models;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Model {
-    private String modelName;
-    private String dialcolour;// e.g., DW2300-1
+    private String modelCode;
+    private String dialColor;
     private double price;
-    private int stockCount;   // Current stock in YOUR store
+    private Map<String, Integer> outletStock = new HashMap<>();
 
-    public Model(String modelName,String dialcolour, double price, int stockCount) {
-        this.modelName = modelName;
-        this.dialcolour = dialcolour;
+    public Model(String modelCode, String dialColor, double price) {
+        this.modelCode = modelCode;
+        this.dialColor = dialColor;
         this.price = price;
-        this.stockCount = stockCount;
     }
 
-    // Getters and Setters
-    public String getModelName() { return modelName; }
-    public String getDialColour() { return dialcolour; }
+    public void setStock(String outlet, int quantity) {
+        outletStock.put(outlet.toUpperCase(), quantity);
+    }
+
+    public int getStock(String outlet) {
+        return outletStock.getOrDefault(outlet.toUpperCase(), 0);
+    }
+
+    public void adjustStock(String outlet, int adjustment) {
+        String key = outlet.toUpperCase();
+        // HQ (Service Center) has infinite stock, so we don't track it in our CSV
+        if (key.equals("HQ")) return;
+
+        int current = getStock(key);
+        outletStock.put(key, current + adjustment);
+    }
+
+    public String getModelName() { return modelCode; }
+    public String getDialColor() { return dialColor; }
     public double getPrice() { return price; }
-    public int getStockCount() { return stockCount; }
-
-    public void setStockCount(int stockCount) {
-        this.stockCount = stockCount;
-    }
-
-    // Helper to add/remove stock easily
-    public void adjustStock(int quantity) {
-        this.stockCount += quantity;
-    }
-
-    @Override
-    public String toString() {
-        return modelName + "(" + dialcolour + ") -RM" + price + "," + "[Stock: " + stockCount + "]";
-    }
 }

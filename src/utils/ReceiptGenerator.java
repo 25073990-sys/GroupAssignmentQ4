@@ -1,46 +1,48 @@
 package utils;
 
-import models.Employee;
-import models.Model;
+import models.StockTransaction;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class ReceiptGenerator {
 
-    // Helper to get file name like "receipts_2025-10-13.txt" [cite: 116]
     private String getFileName() {
         return "receipts_" + DateUtils.getCurrentDate() + ".txt";
     }
 
-    public void generateStockReceipt(String type, String from, String to, Model model, int qty, Employee emp) {
-        String fileName = "receipts/" + getFileName(); // Saves in receipts folder
+    public String generateStockReceipt(StockTransaction txt) {
+        new File("receipts").mkdirs();
+        String fileName = getFileName();
 
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true))) { // 'true' means append
-            bw.write("=== STOCK TRANSACTION RECEIPT ===");
-            bw.newLine();
-            bw.write("Transaction: " + type); //
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("receipts/" + fileName, true))) {
+            bw.write("=== " + txt.getType() + " ===");
             bw.newLine();
             bw.write("Date: " + DateUtils.getCurrentDate());
             bw.newLine();
             bw.write("Time: " + DateUtils.getCurrentTime());
             bw.newLine();
-            bw.write("From: " + from); // [cite: 99]
+            bw.write("From: " + txt.getFromOutlet());
             bw.newLine();
-            bw.write("To: " + to); // [cite: 100]
+            bw.write("To:   " + txt.getToOutlet());
             bw.newLine();
-            bw.write("Item: " + model.getModelName() + " (Qty: " + qty + ")"); // [cite: 101]
+            bw.write("Models Received:");
             bw.newLine();
-            bw.write("Employee: " + emp.getName()); // [cite: 103]
+            for (StockTransaction.StockItem item : txt.getItems()) {
+                bw.write(" - " + item.getModelName() + " (Quantity: " + item.getQuantity() + ")");
+                bw.newLine();
+            }
+            bw.write("Total Quantity: " + txt.getTotalQuantity());
+            bw.newLine();
+            bw.write("Served by: " + txt.getEmployeeName());
             bw.newLine();
             bw.write("---------------------------------");
             bw.newLine();
-            bw.newLine(); // Empty line for separation
-
-            System.out.println("Receipt generated: " + fileName); // [cite: 116]
-
+            bw.newLine();
+            return fileName;
         } catch (IOException e) {
-            System.out.println("Error generating receipt: " + e.getMessage());
+            return "Error";
         }
     }
 }
