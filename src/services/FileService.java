@@ -46,7 +46,6 @@ public class FileService {
     //Method 2: For Watch Models
     private static final String MODELS_PATH = "data/models.csv";
     private static final String SALES_PATH = "data/sales.csv";
-    private static final String OUTLET_PATH = "data/outlet.csv";
 
     //Loads models with stock for all 10 outlets
     public static List<Model> loadModels() {
@@ -86,7 +85,16 @@ public class FileService {
 
     // Saves a sale record to sales.csv
     public static void saveSaleToCSV(Sale sale) {
+        //Check if the file is empty before adding header
+        File file = new File(SALES_PATH);
+        boolean fileExists = file.exists() &&  file.length() > 0;
+
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(SALES_PATH, true)))) {
+            //If file is new/empty, add the header
+            if (!fileExists) {
+                out.println("Date,Time,Customer,Total,PaymentMethod,Employee,Outlet");
+            }
+
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd,HH:mm");
             out.println(String.format("%s,%s,%.2f,%s,%s,%s",
                     sale.getTimestamp().format(dtf), sale.getCustomerName(), sale.getTotal(),
@@ -109,10 +117,11 @@ public class FileService {
     }
 
     //Method 3: For Outlets
+    private static final String OUTLET_PATH = "data/outlet.csv";
     public static List<Outlet> loadOutlets() {
         List<Outlet> outlets = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader("data/outlet.csv"))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(OUTLET_PATH))) {
             String line;
             boolean firstLine = true;
 
