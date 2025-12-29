@@ -1,94 +1,46 @@
 package services;
 
-import models.Sale;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Scanner;
+import models.*;
+import utils.ReceiptGenerator;
+import java.util.List;
 
 public class SalesService {
+    public boolean processSale(Sale sale, List<Model> inventory) {
+        // 1. Verify items (Checking Name AND Colour)
+        for (SaleItem item : sale.getItems()) {
+            Model model = findModel(item.getModelName(), item.getColour(), inventory);
 
-    private static final String SALES_CSV = "data/sales.csv"; // Ensure path is correct
-
-    public void recordNewSale(Scanner scanner, String currentEmployee) {
-        System.out.println("\n=== Record New Sale ===");
-
-        // Input Customer
-        System.out.print("Customer Name: ");
-        String customer = scanner.nextLine();
-
-        // Initialize Sale
-        Sale currentSale = new Sale(customer, currentEmployee, "");
-
-        // Add Items
-        boolean adding = true;
-        while (adding) {
-            System.out.print("Enter Model: ");
-            String model = scanner.nextLine();
-
-            System.out.print("Enter Quantity: ");
-            int qty = 0;
-            try {
-                qty = Integer.parseInt(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number.");
-                continue;
+            if (model == null) {
+                System.out.println("Error: Product " + item.getModelName() + " not found.");
+                return false;
             }
 
-            System.out.print("Unit Price: RM");
-            double price = 0;
-            try {
-                price = Double.parseDouble(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid price.");
+            if (model.getStockForOutlet(sale.getOutletCode()) < item.getQuantity()) {
+                System.out.println("Insufficient stock at " + sale.getOutletCode());
+                return false;
             }
-
-            currentSale.addItem(model, qty, price);
-
-            System.out.print("More items? (Y/N): ");
-            if (scanner.nextLine().equalsIgnoreCase("N")) adding = false;
         }
 
-        // Method
-        System.out.print("Method (Cash/Card/E-wallet): ");
-        currentSale = new Sale(customer, currentEmployee, scanner.nextLine()); // Update method
-        // (Note: In a real refactor, setMethod would be better, but this works for now)
+        // 2. Deduct stock using the array logic in Model.java
+        for (SaleItem item : sale.getItems()) {
+            Model model = findModel(item.getModelName(), item.getColour(), inventory);
+            model.updateStock(sale.getOutletCode(), -item.getQuantity());
+        }
 
-        // Save
-        generateTextReceipt(currentSale);
-        saveToSalesHistory(currentSale);
-        System.out.println("Sale Recorded. Total: RM" + currentSale.getTotal());
+        // 3. Persistence
+        FileService.saveSaleToCSV(sale);
+        FileService.saveModels(inventory); // Overwrites models.csv with new array values
+        ReceiptGenerator.createReceiptFile(sale);
+
+        return true;
     }
 
-    private void generateTextReceipt(Sale sale) {
-        String fileName = "receipts/sales_" + sale.getDateStr() + ".txt";
-        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
-            writer.println("=== SALE RECEIPT ===");
-            writer.println("Date: " + sale.getDateStr() + " Time: " + sale.getTimeStr());
-            writer.println("Customer: " + sale.getCustomerName());
-            writer.println("Items:");
-            for (Sale.SaleItem item : sale.getItems()) {
-                writer.println("- " + item.getModelName() + " x" + item.getQuantity() + " (RM" + item.getSubtotal() + ")");
+    private Model findModel(String name, String colour, List<Model> inventory) {
+        for (Model m : inventory) {
+            if (m.getName().equalsIgnoreCase(name) && m.getColour().equalsIgnoreCase(colour)) {
+                return m;
             }
-            writer.println("Total: RM" + sale.getTotal());
-            writer.println("Served by: " + sale.getEmployeeInCharge());
-            writer.println("-----------------------------------");
-        } catch (IOException e) {
-            System.out.println("Error saving receipt: " + e.getMessage());
         }
-    }
-
-    private void saveToSalesHistory(Sale sale) {
-        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(SALES_CSV, true)))) {
-            // Date,Time,Customer,Total,Method,Employee
-            pw.println(sale.getDateStr() + "," + sale.getTimeStr() + "," +
-                    sale.getCustomerName() + "," + sale.getTotal() + "," +
-                    sale.getMethod() + "," + sale.getEmployeeInCharge());
-        } catch (IOException e) {
-            System.out.println("Error saving to database.");
-        }
+        return null;
     }
 }

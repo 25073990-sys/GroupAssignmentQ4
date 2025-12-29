@@ -1,61 +1,38 @@
 package models;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Sale {
     private String customerName;
     private String employeeInCharge;
-    private String method; // Cash, Card, etc.
+    private String outletCode; // Added this field
+    private String method;
     private LocalDateTime timestamp;
     private List<SaleItem> items;
 
-    // Inner class for items in the cart
-    public static class SaleItem {
-        private String modelName;
-        private int quantity;
-        private double unitPrice;
-
-        public SaleItem(String modelName, int quantity, double unitPrice) {
-            this.modelName = modelName;
-            this.quantity = quantity;
-            this.unitPrice = unitPrice;
-        }
-
-        public String getModelName() { return modelName; }
-        public int getQuantity() { return quantity; }
-
-        public double getSubtotal() {
-            return quantity * unitPrice;
-        }
-    }
-
-    public Sale(String customerName, String employeeInCharge, String method) {
+    public Sale(String customerName, String employeeInCharge, String outletCode, String method) {
         this.customerName = customerName;
         this.employeeInCharge = employeeInCharge;
+        this.outletCode = outletCode; // Now required to know which column to deduct stock from
         this.method = method;
         this.timestamp = LocalDateTime.now();
         this.items = new ArrayList<>();
     }
 
-    public void addItem(String model, int qty, double price) {
-        items.add(new SaleItem(model, qty, price));
+    public void addItem(String model, String colour, int qty, double price) {
+        items.add(new SaleItem(model, colour, qty, price));
     }
+
+    // Getters
+    public String getOutletCode() { return outletCode; }
+    public String getCustomerName() { return customerName; }
+    public String getEmployeeInCharge() { return employeeInCharge; }
+    public String getMethod() { return method; }
+    public LocalDateTime getTimestamp() { return timestamp; }
+    public List<SaleItem> getItems() { return items; }
 
     public double getTotal() {
         return items.stream().mapToDouble(SaleItem::getSubtotal).sum();
     }
-
-    // Getters
-    public String getCustomerName() { return customerName; }
-    public String getMethod() { return method; }
-    public String getEmployeeInCharge() { return employeeInCharge; }
-    public List<SaleItem> getItems() { return items; }
-    public LocalDateTime getTimestamp() { return timestamp; }
-
-    // Date Helpers
-    public String getDateStr() { return timestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")); }
-    public String getTimeStr() { return timestamp.format(DateTimeFormatter.ofPattern("hh:mm a")); }
 }
