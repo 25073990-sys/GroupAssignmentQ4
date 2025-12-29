@@ -92,7 +92,7 @@ public class FileService {
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(SALES_PATH, true)))) {
             //If file is new/empty, add the header
             if (!fileExists) {
-                out.println("Date,Time,Customer,Total,PaymentMethod,Employee,Outlet");
+                out.println("Date,Time,Customer,Total(RM),PaymentMethod,Employee,Outlet");
             }
 
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd,HH:mm");
