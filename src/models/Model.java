@@ -19,10 +19,15 @@ public class Model {
         this.outletStocks = new HashMap<>();
     }
 
-    // ===== Stock methods (used by StockService & FileService) =====
+    // ===== Stock methods =====
 
     public int getStock(String outletCode) {
         return outletStocks.getOrDefault(outletCode, 0);
+    }
+
+    // [FIX] This is the method EditService and SalesService were looking for
+    public void setStock(String outletCode, int quantity) {
+        outletStocks.put(outletCode, quantity);
     }
 
     public void adjustStock(String outletCode, int quantity) {
@@ -51,7 +56,6 @@ public class Model {
         return outletStocks;
     }
 
-    //converts model data into a single line for saving to models.csv
     public String toCSVRow() {
         String[] codes = {"C60", "C61", "C62", "C63", "C64", "C65", "C66", "C67", "C68", "C69"};
         StringBuilder sb = new StringBuilder();

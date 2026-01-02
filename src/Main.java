@@ -1,14 +1,19 @@
 import models.Employee;
 import models.Model;
+import models.Sale;
 import services.AuthService;
 import services.AttendanceService;
 import services.FileService;
 import services.StockService;
+import services.SearchService;
+import services.EditService;
+import services.SalesService;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -22,9 +27,18 @@ public class Main {
         AuthService authService = new AuthService();
         AttendanceService attendanceService = new AttendanceService();
 
-        // Inventory loaded ONCE via FileService
+        // Load Inventory
         List<Model> inventory = FileService.loadModels();
+
+        // Load Sales
+        List<Sale> salesHistory = new ArrayList<>();
+        // salesHistory = FileService.loadSales(); // Uncomment when loadSales() is fixed
+
+        // Initialize Module Services
         StockService stockService = new StockService(inventory);
+        SearchService searchService = new SearchService(inventory, salesHistory);
+        EditService editService = new EditService(inventory, salesHistory);
+        SalesService salesService = new SalesService(inventory, salesHistory);
 
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -53,20 +67,23 @@ public class Main {
                 System.out.println("\n=== MAIN MENU ===");
                 System.out.println("1. Stock Management");
                 System.out.println("2. Attendance");
-                System.out.println("3. Register New Employee");
-                System.out.println("4. Logout");
+                System.out.println("3. Record New Sale");
+                System.out.println("4. Search Information");
+                System.out.println("5. Edit Information");
+                System.out.println("6. Register New Employee");
+                System.out.println("7. Logout");
                 System.out.print("Select option: ");
 
                 String choice = scanner.nextLine();
 
                 switch (choice) {
 
-                    // ===== STOCK MODULE =====
+                    // ===== STOCK =====
                     case "1":
                         runStockModule(stockService, scanner, currentUser);
                         break;
 
-                    // ===== ATTENDANCE MODULE =====
+                    // ===== ATTENDANCE =====
                     case "2":
                         System.out.println("\n--- ATTENDANCE ---");
                         System.out.println("1. Clock In");
@@ -77,7 +94,6 @@ public class Main {
                         if (attChoice.equals("1")) {
                             clockInTime = LocalTime.now();
                             attendanceService.clockIn(currentUser.getId());
-
                             System.out.println("Clock In Successful!");
                             System.out.println("Date: " + LocalDate.now());
                             System.out.println("Time: " + clockInTime.format(timeFormatter));
@@ -87,25 +103,49 @@ public class Main {
                                 System.out.println("You have not clocked in yet.");
                             } else {
                                 LocalTime out = LocalTime.now();
-                                double hours =
-                                        Duration.between(clockInTime, out).toMinutes() / 60.0;
-
+                                double hours = Duration.between(clockInTime, out).toMinutes() / 60.0;
                                 System.out.println("Clock Out Successful!");
                                 System.out.println("Time: " + out.format(timeFormatter));
                                 System.out.printf("Total Hours Worked: %.1f hours%n", hours);
-
                                 clockInTime = null;
                             }
                         }
                         break;
 
-                    // ===== REGISTER (MANAGER ONLY) =====
+                    // ===== SALES =====
                     case "3":
+                        salesService.recordNewSale(scanner, currentUser);
+                        break;
+
+                    // ===== SEARCH =====
+                    case "4":
+                        System.out.println("\n--- SEARCH INFORMATION ---");
+                        System.out.println("1. Search Stock (By Model)");
+                        System.out.println("2. Search Sales (By Keyword)");
+                        System.out.print("Choice: ");
+                        String searchChoice = scanner.nextLine();
+                        if (searchChoice.equals("1")) searchService.searchStock(scanner);
+                        else if (searchChoice.equals("2")) searchService.searchSales(scanner);
+                        break;
+
+                    // ===== EDIT =====
+                    case "5":
+                        System.out.println("\n--- EDIT INFORMATION ---");
+                        System.out.println("1. Edit Stock Information");
+                        System.out.println("2. Edit Sales Information");
+                        System.out.print("Choice: ");
+                        String editChoice = scanner.nextLine();
+                        if (editChoice.equals("1")) editService.editStock(scanner, currentUser);
+                        else if (editChoice.equals("2")) editService.editSales(scanner);
+                        break;
+
+                    // ===== REGISTER (Fixed Manager Check) =====
+                    case "6":
                         if (!currentUser.getRole().equalsIgnoreCase("Manager")) {
-                            System.out.println("Access Denied: Manager only.");
+                            System.out.println("\n\u001B[31mACCESS DENIED\u001B[0m");
+                            System.out.println("Only Managers can register new employees.");
                             break;
                         }
-
                         System.out.println("\n--- REGISTER NEW EMPLOYEE ---");
                         System.out.print("Employee ID: ");
                         String newId = scanner.nextLine();
@@ -113,19 +153,19 @@ public class Main {
                         String name = scanner.nextLine();
                         System.out.print("Password: ");
                         String pw = scanner.nextLine();
-                        System.out.print("Role: ");
+                        System.out.print("Role (Manager/Staff): ");
                         String role = scanner.nextLine();
 
                         Employee newEmp = new Employee(newId, name, role, pw);
                         if (authService.register(newEmp)) {
-                            System.out.println("Employee registered successfully.");
+                            System.out.println("\u001B[32mEmployee registered successfully.\u001B[0m");
                         } else {
-                            System.out.println("Registration failed.");
+                            System.out.println("\u001B[31mRegistration failed.\u001B[0m");
                         }
                         break;
 
                     // ===== LOGOUT =====
-                    case "4":
+                    case "7":
                         authService.logout();
                         loggedIn = false;
                         System.out.println("Logged out successfully.");
@@ -138,7 +178,7 @@ public class Main {
         }
     }
 
-    // ===== STOCK SUB-MENU (kept clean for rebase) =====
+    // ===== STOCK SUB-MENU =====
     private static void runStockModule(StockService service, Scanner scanner, Employee emp) {
         while (true) {
             System.out.println("\n--- STOCK MANAGEMENT ---");

@@ -1,21 +1,39 @@
 package models;
 
 public class SaleItem {
-        private String modelName;
-        private String colour; // Added this
-        private int quantity;
-        private double unitPrice;
+    private String modelName;
+    private String color;
+    private int quantity;
+    private double price;
 
-        public SaleItem(String modelName, String colour, int quantity, double unitPrice) {
-            this.modelName = modelName;
-            this.colour = colour;
-            this.quantity = quantity;
-            this.unitPrice = unitPrice;
-        }
-
-        public String getModelName() { return modelName; }
-        public String getColour() { return colour; }
-        public int getQuantity() { return quantity; }
-        public double getSubtotal() { return quantity * unitPrice; }
+    public SaleItem(String modelName, String color, int quantity, double price) {
+        this.modelName = modelName;
+        this.color = color;
+        this.quantity = quantity;
+        this.price = price;
     }
 
+    // ===== GETTERS =====
+    public String getModelName() { return modelName; }
+    public String getColor() { return color; }
+    public int getQuantity() { return quantity; }
+    public double getPrice() { return price; }
+
+    // [FIXED] Matches what ReceiptGenerator is looking for
+    public double getSubtotal() {
+        return this.price * this.quantity;
+    }
+
+    // ===== SETTERS (Needed for EditService) =====
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+}

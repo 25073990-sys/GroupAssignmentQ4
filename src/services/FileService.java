@@ -41,7 +41,7 @@ public class FileService {
                     employees.add(emp);
                 }
             }
-            System.out.println("Loaded" + employees.size() + " employees with roles");
+            System.out.println("Loaded " + employees.size() + " employees with roles");
 
         } catch (IOException e) {
             System.out.println("Error loading CSV: " + e.getMessage());

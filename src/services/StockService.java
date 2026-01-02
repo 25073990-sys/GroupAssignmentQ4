@@ -1,10 +1,10 @@
 package services;
 
-import models.Model;
 import models.Employee;
+import models.Model;
 import models.StockTransaction;
-import utils.ReceiptGenerator;
 import utils.DateUtils;
+import utils.ReceiptGenerator;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -17,24 +17,30 @@ public class StockService {
     private List<Model> inventory;
     private ReceiptGenerator receiptGenerator;
 
+    // File paths
     private static final String MODELS_FILE = "data/models.csv";
     private static final String TRANS_FILE = "data/stock_transactions.csv";
+
+    // Valid outlet codes
     private static final String[] OUTLETS =
             {"C60","C61","C62","C63","C64","C65","C66","C67","C68","C69"};
 
+    // Colors to match your screenshots (Green for success)
     private static final String RESET = "\u001B[0m";
-    private static final String RED = "\u001B[31m";
     private static final String GREEN = "\u001B[32m";
+    private static final String RED = "\u001B[31m";
 
     public StockService(List<Model> inventory) {
         this.inventory = inventory;
         this.receiptGenerator = new ReceiptGenerator();
     }
 
-    // ===== FEATURE 1: Morning / Night Stock Count =====
+    // ==========================================================
+    // FEATURE 1: Morning & Night Stock Count
+    // ==========================================================
     public void performStockCount(Scanner scanner) {
 
-        System.out.println("\n=== Morning Stock Count ===");
+        System.out.println("\n=== Morning/Night Stock Count ===");
         System.out.println("Date: " + DateUtils.getCurrentDate());
         System.out.println("Time: " + DateUtils.getCurrentTime());
 
@@ -46,41 +52,52 @@ public class StockService {
             return;
         }
 
-        int matches = 0, mismatches = 0;
+        int matches = 0;
+        int mismatches = 0;
+
+        System.out.println("\n--- Start Counting ---");
 
         for (Model m : inventory) {
             int systemStock = m.getStock(outlet);
 
-            System.out.print("Model: " + m.getModelName() + " | Counted: ");
+            // Prompt user
+            System.out.print("Model: " + m.getModelName() + " | Count: ");
             String input = scanner.nextLine().trim();
-            if (input.isEmpty()) continue;
+
+            if (input.isEmpty()) {
+                continue;
+            }
 
             try {
                 int counted = Integer.parseInt(input);
-                System.out.println("System Record: " + systemStock);
 
                 if (counted == systemStock) {
                     System.out.println(GREEN + "Stock tally correct." + RESET);
                     matches++;
                 } else {
-                    System.out.println(RED + "Mismatch detected." + RESET);
+                    System.out.println(RED + "Mismatch! System Record: " + systemStock + RESET);
                     mismatches++;
                 }
-                System.out.println();
             } catch (NumberFormatException e) {
                 System.out.println("Invalid input.");
             }
         }
 
-        System.out.println("Tally Correct: " + matches);
+        System.out.println("\n--- Summary ---");
+        System.out.println("Matches: " + matches);
         System.out.println("Mismatches: " + mismatches);
 
         if (mismatches > 0) {
-            System.out.println(RED + "Warning: Please verify stock." + RESET);
+            System.out.println(RED + "Warning: Please verify stock discrepancies." + RESET);
+        } else {
+            System.out.println(GREEN + "Stock count complete. All Good." + RESET);
         }
     }
 
-    // ===== FEATURE 2: Stock Transfer =====
+    // ==========================================================
+    // FEATURE 2: Stock In & Stock Out
+    // Matches the screenshot output exactly
+    // ==========================================================
     public void processStockTransfer(Scanner scanner, Employee user, boolean isStockIn) {
 
         String type = isStockIn ? "Stock In" : "Stock Out";
@@ -89,22 +106,22 @@ public class StockService {
         System.out.println("Date: " + DateUtils.getCurrentDate());
         System.out.println("Time: " + DateUtils.getCurrentTime());
 
-        System.out.print("From (Outlet / HQ): ");
+        // 1. Get Details
+        System.out.print("From (Outlet Code or HQ): ");
         String from = scanner.nextLine().trim().toUpperCase();
 
-        System.out.print("To (Outlet): ");
+        System.out.print("To (Outlet Code or HQ): ");
         String to = scanner.nextLine().trim().toUpperCase();
 
-        if (!isValidOutlet(to) || (!isStockIn && !isValidOutlet(from))) {
-            System.out.println(RED + "Invalid outlet code." + RESET);
+        if (!isValidOutlet(to) && !to.equals("HQ")) {
+            System.out.println(RED + "Invalid destination." + RESET);
             return;
         }
 
-        StockTransaction transaction =
-                new StockTransaction(type, from, to, user.getName());
+        StockTransaction transaction = new StockTransaction(type, from, to, user.getName());
 
+        // 2. Add Items loop
         while (true) {
-
             System.out.print("Model Name (blank to finish): ");
             String name = scanner.nextLine().trim();
             if (name.isEmpty()) break;
@@ -121,14 +138,18 @@ public class StockService {
             System.out.print("Quantity: ");
             try {
                 int qty = Integer.parseInt(scanner.nextLine());
+                if (qty <= 0) continue;
 
+                // Validation: Check source stock (unless it's HQ)
                 if (!from.equals("HQ") && model.getStock(from) < qty) {
-                    System.out.println(RED + "Insufficient stock." + RESET);
+                    System.out.println(RED + "Insufficient stock at " + from + RESET);
                     continue;
                 }
 
-                model.adjustStock(from, -qty);
-                model.adjustStock(to, qty);
+                // Update memory
+                if (!from.equals("HQ")) model.adjustStock(from, -qty);
+                if (!to.equals("HQ"))   model.adjustStock(to, qty);
+
                 transaction.addItem(model.getModelName(), qty);
 
             } catch (NumberFormatException e) {
@@ -136,12 +157,29 @@ public class StockService {
             }
         }
 
+        // 3. Finalize & Print Receipt Logic matches Screenshot
         if (transaction.getTotalQuantity() > 0) {
+
+            // Output summary similar to screenshot
+            System.out.println("Models Received:");
+            for(StockTransaction.StockItem item : transaction.getItems()) {
+                System.out.println(" - " + item.getModelName() + " (Quantity: " + item.getQuantity() + ")");
+            }
+            System.out.println("Total Quantity: " + transaction.getTotalQuantity());
+            System.out.println();
+
+            // Save Data
             saveTransaction(transaction);
             saveInventory();
-            receiptGenerator.generateStockReceipt(transaction);
+            String rFile = receiptGenerator.generateStockReceipt(transaction);
 
-            System.out.println(GREEN + "Stock updated successfully." + RESET);
+            // Success Messages
+            System.out.println("Model quantities updated " + GREEN + "successfully" + RESET + ".");
+            System.out.println(type + GREEN + " recorded" + RESET + ".");
+            System.out.println("Receipt generated: receipts/" + rFile);
+
+        } else {
+            System.out.println("Transaction cancelled.");
         }
     }
 
@@ -166,17 +204,8 @@ public class StockService {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(MODELS_FILE))) {
             bw.write("Model,Dial Colour,Price,C60,C61,C62,C63,C64,C65,C66,C67,C68,C69");
             bw.newLine();
-
             for (Model m : inventory) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(m.getModelName()).append(",")
-                        .append(m.getDialColour()).append(",")
-                        .append(m.getPrice());
-
-                for (String o : OUTLETS) {
-                    sb.append(",").append(m.getStock(o));
-                }
-                bw.write(sb.toString());
+                bw.write(m.toCSVRow());
                 bw.newLine();
             }
         } catch (IOException e) {
@@ -184,4 +213,3 @@ public class StockService {
         }
     }
 }
-
