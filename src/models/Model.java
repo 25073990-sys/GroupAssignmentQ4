@@ -30,7 +30,7 @@ public class Model {
         outletStocks.put(outletCode, current + quantity);
     }
 
-    public void setStock(String outletCode, int quantity) {
+    public void addStock(String outletCode, int quantity) {
         outletStocks.put(outletCode, quantity);
     }
 
@@ -49,6 +49,18 @@ public class Model {
 
     public Map<String, Integer> getOutletStocks() {
         return outletStocks;
+    }
+
+    //converts model data into a single line for saving to models.csv
+    public String toCSVRow() {
+        String[] codes = {"C60", "C61", "C62", "C63", "C64", "C65", "C66", "C67", "C68", "C69"};
+        StringBuilder sb = new StringBuilder();
+        sb.append(modelName).append(",").append(dialColour).append(",").append(price);
+
+        for (String code : codes) {
+            sb.append(",").append(getStock(code));
+        }
+        return sb.toString();
     }
 
     @Override

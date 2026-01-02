@@ -5,15 +5,14 @@ import models.Model;
 import models.Outlet;
 import models.Sale;
 
-<<<<<<< HEAD
-import java.io.*;
 import java.time.format.DateTimeFormatter;
-=======
 import java.io.BufferedReader; //reads the file by line
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader; //opens a file
 import java.io.FileWriter;
 import java.io.IOException; //handle file errors
->>>>>>> 09bc9a9 (Integrate auth, attendance, stock and sales modules)
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,10 +41,7 @@ public class FileService {
                     employees.add(emp);
                 }
             }
-<<<<<<< HEAD
             System.out.println("Loaded" + employees.size() + " employees with roles");
-=======
->>>>>>> 09bc9a9 (Integrate auth, attendance, stock and sales modules)
 
         } catch (IOException e) {
             System.out.println("Error loading CSV: " + e.getMessage());
