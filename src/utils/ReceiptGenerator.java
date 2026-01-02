@@ -73,7 +73,7 @@ public class ReceiptGenerator {
                 writer.println("-------------------------------------");
                 writer.printf("TOTAL:                  RM%8.2f%n", sale.getTotal());
                 writer.println("Payment Method: " + sale.getMethod());
-                writer.println("Served by: " + sale.getEmployeeName());
+                writer.println("Served by: " + sale.getEmployeeInCharge());
                 writer.println("=====================================");
                 writer.println("       THANK YOU FOR YOUR VISIT      ");
             } catch (IOException e) {

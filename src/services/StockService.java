@@ -170,7 +170,7 @@ public class StockService {
             for (Model m : inventory) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(m.getModelName()).append(",")
-                        .append(m.getDialColor()).append(",")
+                        .append(m.getDialColour()).append(",")
                         .append(m.getPrice());
 
                 for (String o : OUTLETS) {

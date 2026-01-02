@@ -6,7 +6,7 @@ import java.util.List;
 
 public class SalesService {
     public boolean processSale(Sale sale, List<Model> inventory) {
-        // 1. Verify items (Checking Name AND Colour)
+        // Verification block - check if the product exists and if the specific store has enough stock
         for (SaleItem item : sale.getItems()) {
             Model model = findModel(item.getModelName(), item.getColour(), inventory);
 
@@ -15,19 +15,19 @@ public class SalesService {
                 return false;
             }
 
-            if (model.getStockForOutlet(sale.getOutletCode()) < item.getQuantity()) {
+            if (model.getStock(sale.getOutletCode()) < item.getQuantity()) {
                 System.out.println("Insufficient stock at " + sale.getOutletCode());
                 return false;
             }
         }
 
-        // 2. Deduct stock using the array logic in Model.java
+        // Deduction block - Deduct stock using the array logic in Model.java
         for (SaleItem item : sale.getItems()) {
             Model model = findModel(item.getModelName(), item.getColour(), inventory);
-            model.updateStock(sale.getOutletCode(), -item.getQuantity());
+            model.adjustStock(sale.getOutletCode(), -item.getQuantity());
         }
 
-        // 3. Persistence
+        // 3. Persistence block - tells FileService to record transaction and update models.csv
         FileService.saveSaleToCSV(sale);
         FileService.saveModels(inventory); // Overwrites models.csv with new array values
         ReceiptGenerator.createReceiptFile(sale);
@@ -37,7 +37,7 @@ public class SalesService {
 
     private Model findModel(String name, String colour, List<Model> inventory) {
         for (Model m : inventory) {
-            if (m.getName().equalsIgnoreCase(name) && m.getColour().equalsIgnoreCase(colour)) {
+            if (m.getModelName().equalsIgnoreCase(name) && m.getDialColour().equalsIgnoreCase(colour)) {
                 return m;
             }
         }
