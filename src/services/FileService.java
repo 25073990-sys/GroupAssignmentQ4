@@ -5,6 +5,7 @@ import models.Model;
 import models.Outlet;
 import models.Sale;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.io.BufferedReader; //reads the file by line
 import java.io.BufferedWriter;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileService {
-    //Method 1: For Employees
+    //======== Method 1: For Employees ========
     public static List<Employee> loadEmployees() {
         List<Employee> employees = new ArrayList<>();
 
@@ -49,7 +50,7 @@ public class FileService {
         return employees;
     }
 
-    //Method 2: For Watch Models
+    //======== Method 2: For Watch Models ========
     private static final String MODELS_PATH = "data/models.csv";
     private static final String SALES_PATH = "data/sales.csv";
 
@@ -98,13 +99,13 @@ public class FileService {
         try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(SALES_PATH, true)))) {
             //If file is new/empty, add the header
             if (!fileExists) {
-                out.println("Date,Time,Customer,Total(RM),PaymentMethod,Employee,Outlet");
+                out.println("Date,Time,Outlet,Customer,Total(RM),PaymentMethod,Employee");
             }
 
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd,HH:mm");
-            out.println(String.format("%s,%s,%.2f,%s,%s,%s",
-                    sale.getTimestamp().format(dtf), sale.getCustomerName(), sale.getTotal(),
-                    sale.getMethod(), sale.getEmployeeInCharge(), sale.getOutletCode()));
+            out.println(String.format("%s,%s,%s,%.2f,%s,%s",
+                    sale.getTimestamp().format(dtf),sale.getOutletCode(), sale.getCustomerName(), sale.getTotal(),
+                    sale.getMethod(), sale.getEmployeeInCharge()));
         } catch (IOException e) {
             System.out.println("Error saving sale: " + e.getMessage());
         }
@@ -122,7 +123,7 @@ public class FileService {
         }
     }
 
-    //Method 3: For Outlets
+    //======== Method 3: For Outlets ========
     private static final String OUTLET_PATH = "data/outlet.csv";
     public static List<Outlet> loadOutlets() {
         List<Outlet> outlets = new ArrayList<>();
@@ -144,7 +145,7 @@ public class FileService {
                     outlets.add(new Outlet(code, name));
                 }
             }
-            System.out.println("Loaded" + outlets.size() + " outlets");
+            System.out.println("Loaded " + outlets.size() + " outlets");
         } catch (IOException e) {
             System.out.println("Error loading Outlets: " + e.getMessage());
         }
@@ -162,5 +163,47 @@ public class FileService {
         } catch (IOException ex) {
             System.out.println("Error saving new employee.");
         }
+    }
+    //======== Method 4: Load Sales History for report ========
+    public static List<Sale> loadSales() {
+        List<Sale> sales = new ArrayList<>();
+        File file = new File (SALES_PATH);
+        if (!file.exists()) return sales;
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd,HH:mm");
+
+        try(BufferedReader br= new BufferedReader(new FileReader(file))){
+            String line;
+            boolean firstLine = true;
+            while((line = br.readLine())!= null) { //read one line at a time until the file ends
+                if (firstLine) { //skip the header
+                    firstLine = false;
+                    continue;
+                }
+                String[] data = line.split(",");
+                // expect 7 columns
+                if (data.length >= 7) {
+                    String dateTimeString = data[0] + "," + data[1];
+                    //parse cuz in csv file, it is stored as text
+                    LocalDateTime timestamp = LocalDateTime.parse(dateTimeString, dtf);
+
+
+                    //Extract data
+                    String outletCode = data[2].trim();
+                    String customerName = data[3].trim();
+                    double total = Double.parseDouble(data[4].trim()); //parse cuz in csv file, it is stored as text
+                    String method = data[5].trim();
+                    String employeeInCharge = data[6].trim();
+
+                    //Create object
+                    //Sale(timestamp, outlet, customer, method, total, employee)
+                    Sale s = new Sale(timestamp, outletCode, customerName, method,total,employeeInCharge);
+                    sales.add(s);
+                }
+            }
+        }catch (Exception e){
+            System.out.println("Error loading Sales: " + e.getMessage());
+        }
+        return sales;
     }
 }
