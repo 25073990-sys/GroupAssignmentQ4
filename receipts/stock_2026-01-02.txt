@@ -1,0 +1,12 @@
+=== Stock In ===
+Date: 2026-01-02
+Time: 11:17 PM
+From: HQ
+To:   C60
+Models Received:
+ - DW2400-2 (Quantity: 2)
+ - DW2300-3 (Quantity: 1)
+Total Quantity: 3
+Served by: Ali bin Abu
+---------------------------------
+
