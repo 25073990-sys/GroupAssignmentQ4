@@ -8,6 +8,7 @@ import services.StockService;
 import services.SearchService;
 import services.EditService;
 import services.SalesService;
+import services.ReportService;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -32,7 +33,7 @@ public class Main {
 
         // Load Sales
         List<Sale> salesHistory = new ArrayList<>();
-        // salesHistory = FileService.loadSales(); // Uncomment when loadSales() is fixed
+        salesHistory = FileService.loadSales();
 
         // Initialize Module Services
         StockService stockService = new StockService(inventory);
@@ -71,7 +72,8 @@ public class Main {
                 System.out.println("4. Search Information");
                 System.out.println("5. Edit Information");
                 System.out.println("6. Register New Employee");
-                System.out.println("7. Logout");
+                System.out.println("7. Filter & Sort Sales History");
+                System.out.println("8. Logout");
                 System.out.print("Select option: ");
 
                 String choice = scanner.nextLine();
@@ -139,7 +141,7 @@ public class Main {
                         else if (editChoice.equals("2")) editService.editSales(scanner);
                         break;
 
-                    // ===== REGISTER (Fixed Manager Check) =====
+                    // ===== REGISTER =====
                     case "6":
                         if (!currentUser.getRole().equalsIgnoreCase("Manager")) {
                             System.out.println("\n\u001B[31mACCESS DENIED\u001B[0m");
@@ -164,8 +166,13 @@ public class Main {
                         }
                         break;
 
-                    // ===== LOGOUT =====
+                    // ==== FILTER & SORT =====
                     case "7":
+                        runReportModule(scanner);
+                        break;
+
+                    // ===== LOGOUT =====
+                    case "8":
                         authService.logout();
                         loggedIn = false;
                         System.out.println("Logged out successfully.");
@@ -202,5 +209,72 @@ public class Main {
                 break;
             }
         }
+    }
+
+    public static void runReportModule(Scanner scanner) {
+        //Reload data to ensure it is fresh
+        List<Sale> allSales = FileService.loadSales();
+
+        if(allSales.isEmpty()) {
+            System.out.println("No sales found.");
+            return;
+        }
+        System.out.println("\n ---SALES REPORT---");
+        System.out.println("1. View All Sales");
+        System.out.println("2. Filter by Date Range");
+        System.out.println("3. Sort by Amount (High -> Low)");
+        System.out.println("4. Sort by Amount (Low -> High)");
+        System.out.println("5. Sort by Customer Name");
+        System.out.println("Choice: ");
+
+        String choice = scanner.nextLine();
+        List <Sale> displayList = allSales;
+        try {
+            //Choice 1 is view ALL, which is default case, so no need to code out
+            if (choice.equals("2")) {
+                System.out.println("Enter Start Date (yyyy-MM-dd): ");
+                LocalDate startDate = LocalDate.parse(scanner.nextLine());
+                System.out.println("Enter End Date (yyyy-MM-dd): ");
+                LocalDate endDate = LocalDate.parse(scanner.nextLine());
+
+                displayList = ReportService.filterByDateRange(allSales,startDate,endDate);
+            }
+            else if (choice.equals("3")) {
+                ReportService.sortSales(displayList,"amount",false);
+            }else if (choice.equals("4")) {
+                ReportService.sortSales(displayList,"amount",true);
+            }else if (choice.equals("5")) {
+                ReportService.sortSales(displayList,"customer",true);
+            }
+            //DISPLAY TABLE
+            System.out.println("\n------------------------------------------------------------------------------------------------");
+            System.out.printf("%-12s | %-6s | %-6s | %-15s | %-12s | %-10s | %-8s%n",
+                    "Date", "Time", "Outlet", "Customer", "Total", "Method", "Staff");
+            System.out.println("------------------------------------------------------------------------------------------------");
+
+            DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm");
+
+            //Display cumulative sales
+            double totalRevenue = 0.0;
+
+            for (Sale s : displayList) {
+                System.out.printf("%-12s | %-6s | %-6s | %-15s | RM%-10.2f | %-10s | %-8s%n",
+                        s.getTimestamp().toLocalDate(),
+                        s.getTimestamp().format(timeFmt),
+                        s.getOutletCode(),
+                        s.getCustomerName(),
+                        s.getTotal(),
+                        s.getMethod(),
+                        s.getEmployeeInCharge());
+
+                totalRevenue += s.getTotal();
+            }
+            System.out.println("------------------------------------------------------------------------------------------------");
+            System.out.printf("%58s TOTAL SALES: RM %-10.2f%n", " ",totalRevenue);
+            System.out.println("------------------------------------------------------------------------------------------------");
+
+        } catch (Exception e) {
+            System.out.println("Error processing report (Check date format yyyy-MM-dd): " + e.getMessage());
+            }
     }
 }
