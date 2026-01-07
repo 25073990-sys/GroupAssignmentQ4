@@ -149,8 +149,7 @@ public class SalesService {
             writer.newLine();
             writer.write("GOLDEN HOUR RECEIPT");
             writer.newLine();
-            writer.write("Date: " + LocalDateTime.now());
-            writer.newLine();
+            writer.write("Salesperson: " + sale.getEmployeeInCharge()); // FIXED            writer.newLine();
             writer.write("Salesperson: " + sale.getEmployeeInCharge());
             writer.newLine();
             writer.write("Customer: " + sale.getCustomerName());
