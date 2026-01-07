@@ -222,30 +222,47 @@ public class Main {
         System.out.println("\n ---SALES REPORT---");
         System.out.println("1. View All Sales");
         System.out.println("2. Filter by Date Range");
-        System.out.println("3. Sort by Amount (High -> Low)");
-        System.out.println("4. Sort by Amount (Low -> High)");
-        System.out.println("5. Sort by Customer Name");
+        System.out.println("3. Sort by Date (Latest first)");
+        System.out.println("4. Sort by Date (Oldest first)");
+        System.out.println("5. Sort by Amount (High -> Low)");
+        System.out.println("6. Sort by Amount (Low -> High)");
+        System.out.println("7. Sort by Customer Name");
         System.out.println("Choice: ");
 
         String choice = scanner.nextLine();
         List <Sale> displayList = allSales;
         try {
-            //Choice 1 is view ALL, which is default case, so no need to code out
-            if (choice.equals("2")) {
-                System.out.println("Enter Start Date (yyyy-MM-dd): ");
-                LocalDate startDate = LocalDate.parse(scanner.nextLine());
-                System.out.println("Enter End Date (yyyy-MM-dd): ");
-                LocalDate endDate = LocalDate.parse(scanner.nextLine());
+            switch (choice) {
+                case "1":
+                    break;
+                case "2":
+                    System.out.println("Enter Start Date (yyyy-MM-dd): ");
+                    LocalDate startDate = LocalDate.parse(scanner.nextLine());
+                    System.out.println("Enter End Date (yyyy-MM-dd): ");
+                    LocalDate endDate = LocalDate.parse(scanner.nextLine());
 
-                displayList = ReportService.filterByDateRange(allSales,startDate,endDate);
-            }
-            else if (choice.equals("3")) {
+                    displayList = ReportService.filterByDateRange(allSales,startDate,endDate);
+                    break;
+                case "3":
+                ReportService.sortSales(displayList,"date",false);
+                break;
+                case "4":
+                ReportService.sortSales(displayList,"date",true);
+                break;
+                case "5":
                 ReportService.sortSales(displayList,"amount",false);
-            }else if (choice.equals("4")) {
-                ReportService.sortSales(displayList,"amount",true);
-            }else if (choice.equals("5")) {
-                ReportService.sortSales(displayList,"customer",true);
+                break;
+                case "6":
+                ReportService.sortSales(displayList, "amount", true);
+                break;
+                case "7":
+                ReportService.sortSales(displayList, "customer", true);
+                break;
+                default:
+                    System.out.println("Invalid option.");
+                    break;
             }
+
             //DISPLAY TABLE
             System.out.println("\n------------------------------------------------------------------------------------------------");
             System.out.printf("%-12s | %-6s | %-6s | %-15s | %-12s | %-10s | %-8s%n",
@@ -273,8 +290,8 @@ public class Main {
             System.out.printf("%58s TOTAL SALES: RM %-10.2f%n", " ",totalRevenue);
             System.out.println("------------------------------------------------------------------------------------------------");
 
-        } catch (Exception e) {
-            System.out.println("Error processing report (Check date format yyyy-MM-dd): " + e.getMessage());
+        } catch (Exception e){
+                System.out.println("Error processing report (Check date format yyyy-MM-dd): " + e.getMessage());
             }
     }
 }
