@@ -44,7 +44,7 @@ public class SalesService {
 
         // Create the Sale Object
         // Using getName() or getEmployeeInCharge() depending on what's available
-        Sale newSale = new Sale(now,outletCode, customerName,"Pending",0.0,currentUser.getId());
+        Sale newSale = new Sale(now, outletCode, customerName, "Pending", 0.0, currentUser.getId());
 
         // 3. Add Items Loop
         boolean addingItems = true;
@@ -115,11 +115,56 @@ public class SalesService {
             return;
         }
 
-        System.out.print("\nEnter transaction method: ");
-        String method = scanner.nextLine();
-        newSale.setMethod(method);
+        System.out.printf("Subtotal: RM%.2f%n", newSale.getTotal());
+        String method = " ";
+        boolean validMethod = false;
 
-        System.out.printf("Subtotal: RM%.0f%n", newSale.getTotal());
+        while (!validMethod) {
+            System.out.println("\nSelect Payment Method: ");
+            System.out.println("1. Cash");
+            System.out.println("2. Card");
+            System.out.println("3. QR");
+            System.out.println("4. Cancel Transaction");
+            System.out.println("Enter payment method: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                case "Cash": //Allow to type Cash or 1
+                    method = "Cash";
+                    validMethod = true;
+                    break;
+                case "2":
+                case "Card":
+                    method = "Card";
+                    validMethod = true;
+                    break;
+                case "3":
+                case "QR":
+                    method = "QR";
+                    validMethod = true;
+                    break;
+                case "4":
+                case"Cancel":
+                    System.out.println("\nCancelling Transaction...");
+                    //Put items back
+                    for (SaleItem item : newSale.getItems()) {
+                        Model originalModel = inventory.stream()
+                                .filter(m->m.getModelName().equalsIgnoreCase(item.getModelName()))
+                                .findFirst().orElse(null);
+                        if (originalModel != null) {
+                            int currentQty = originalModel.getStock(outletCode);
+                            originalModel.setStock(outletCode,currentQty + item.getQuantity());
+                        }
+                    }
+                    System.out.println("Transaction cancelled.");
+                    return;
+                default:
+                    System.out.println("\u001B[31mInvalid method. Please choose 1, 2, or 3.\u001B[0m");
+            }
+        }
+        newSale.setMethod(method);
 
         // 5. Save & Generate Receipt
         salesHistory.add(newSale);
