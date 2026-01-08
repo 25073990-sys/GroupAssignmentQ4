@@ -1,0 +1,11 @@
+=== Stock In ===
+Date: 2026-01-08
+Time: 09:41 am
+From: HQ
+To:   C61
+Models Received:
+ - DW2400-1 (Quantity: 1)
+Total Quantity: 1
+Served by: Tan Guan Han
+---------------------------------
+

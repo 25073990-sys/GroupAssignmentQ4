@@ -40,11 +40,11 @@ public class SalesService {
         String customerName = scanner.nextLine();
 
         // 2. Identify Outlet
-        String outletCode = currentUser.getId().length() >= 3 ? currentUser.getId().substring(0, 3) : "HQ";
+        String outletCode = currentUser.getId().length() >= 3 ? currentUser.getId().substring(0, 3) : "Invalid outlet code";
 
         // Create the Sale Object
         // Using getName() or getEmployeeInCharge() depending on what's available
-        Sale newSale = new Sale(outletCode, customerName, "", currentUser.getName());
+        Sale newSale = new Sale(now,outletCode, customerName,"Pending",0.0,currentUser.getId());
 
         // 3. Add Items Loop
         boolean addingItems = true;
@@ -54,7 +54,6 @@ public class SalesService {
             System.out.print("Enter Model: ");
             String modelInput = scanner.nextLine().trim();
 
-            // === [FIX] EXIT CONDITION ===
             if (modelInput.equalsIgnoreCase("DONE")) {
                 addingItems = false;
                 break;
@@ -66,7 +65,6 @@ public class SalesService {
                     .findFirst()
                     .orElse(null);
 
-            // === [FIX] LOOP PREVENTION: Ask to retry ===
             if (product == null) {
                 System.out.println("Error: Model not found.");
                 System.out.print("Try again? (Y to retry, N to stop adding): ");
@@ -89,7 +87,6 @@ public class SalesService {
             int currentStock = product.getStock(outletCode);
             if (qty > currentStock) {
                 System.out.println("Error: Insufficient stock. Current stock at " + outletCode + ": " + currentStock);
-                // === [FIX] LOOP PREVENTION ===
                 System.out.print("Try again? (Y to retry, N to stop adding): ");
                 String retry = scanner.nextLine();
                 if (retry.equalsIgnoreCase("N")) addingItems = false;
@@ -127,6 +124,8 @@ public class SalesService {
         // 5. Save & Generate Receipt
         salesHistory.add(newSale);
         saveReceipt(newSale);
+        FileService.saveSaleToCSV(newSale);
+        FileService.saveModels(inventory);
 
         System.out.println("\nTransaction \u001B[32msuccessful\u001B[0m."); // Green text
         System.out.println("Sale recorded \u001B[32msuccessfully\u001B[0m.");
@@ -149,7 +148,6 @@ public class SalesService {
             writer.newLine();
             writer.write("GOLDEN HOUR RECEIPT");
             writer.newLine();
-            writer.write("Salesperson: " + sale.getEmployeeInCharge()); // FIXED            writer.newLine();
             writer.write("Salesperson: " + sale.getEmployeeInCharge());
             writer.newLine();
             writer.write("Customer: " + sale.getCustomerName());
