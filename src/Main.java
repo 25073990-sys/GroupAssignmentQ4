@@ -222,7 +222,7 @@ public class Main {
         System.out.println("\n ---SALES & ANALYTICS REPORT---");
         System.out.println("1. Filter & Sort Sales");
         System.out.println("2. Data Analytics");
-        System.out.println("Choice: ");
+        System.out.print("Choice: ");
 
         String mainChoice = scanner.nextLine();
         List <Sale> displayList = allSales;
@@ -274,7 +274,7 @@ public class Main {
                     break;
                 //===== DATA ANALYTICS =====
                 case "2":
-                    showTable = false;
+                    showTable = false; // Don't show the big table for analytics
 
                     System.out.println(" [Data Analytics] ");
                     System.out.println("1. Average Daily Revenue");

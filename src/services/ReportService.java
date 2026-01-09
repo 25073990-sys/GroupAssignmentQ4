@@ -60,20 +60,66 @@ public class ReportService {
             }
         }
     }
-//    public static void avgDailyRevenue(List<Sale> salesHistory,String periodType){
-//        if (salesHistory.isEmpty()){
-//            System.out.println("No sales available for analytics");
-//            return;
-//        }
-//        //Use Tree Map so dates sort automatically
-//        double totalRevenue = 0.0;
-//        Map<String,Double> periodTotals = new TreeMap<>();
-//        DateTimeFormatter week = DateTimeFormatter.ofPattern("w");
-//
-//        //Go through every sale one by one
-//        for (Sale s : salesHistory) {
-//            LocalDate currentDate = s.getTimestamp().toLocalDate();
-//            double amount = s.getTotal();
-//            String key = " ";
-//        }
+
+    public static void avgDailyRevenue(List<Sale> salesHistory) {
+        if (salesHistory.isEmpty()) {
+            System.out.println("No sales available for analytics");
+            return;
+        }
+        //Use Tree Map so dates sort automatically
+        double totalRevenue = 0.0;
+        Set <String> days = new HashSet<>();
+        //Go through every sale one by one
+        for (Sale s : salesHistory) {
+            totalRevenue += s.getTotal();
+            days.add(s.getTimestamp().toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        if(days.isEmpty()) {
+            return;
+        }
+        double average = totalRevenue / days.size();
+
+        System.out.println("\n----AVERAGE DAILY REVENUE----");
+        System.out.printf("Total Revenue: RM%.2f%n", totalRevenue);
+        System.out.printf("Active Days:   %d days%n" ,days.size());
+        System.out.printf("Daily Average: RM%.2f / day%n" , average);
+        System.out.println("-----------------------------");
+    }
+
+    public static void salesByPeriod(List<Sale> sales, String periodType) {
+        if (sales.isEmpty()) return;
+
+        Map<String, Double> periodTotals = new TreeMap<>();
+        DateTimeFormatter weekFmt = DateTimeFormatter.ofPattern("w");
+
+        for (Sale s : sales) {
+            LocalDate date = s.getTimestamp().toLocalDate();
+            double amount = s.getTotal();
+            String key = " ";
+
+            switch (periodType.toUpperCase()) {
+                case "DAILY":
+                    key = date.toString(); // "2026-01-09"
+                    break;
+                case "MONTHLY":
+                    // "2026-01"
+                    key = date.getYear() + "-" + String.format("%02d", date.getMonthValue());
+                    break;
+                case "WEEKLY":
+                    // "2026-W02"
+                    key = date.getYear() + "-W" + date.format(weekFmt);
+                    break;
+                default:
+                    System.out.println("Invalid period type.");
+                    return;
+            }
+            periodTotals.put(key, periodTotals.getOrDefault(key, 0.0) + amount);
+        }
+
+        System.out.println("\n=== SALES BREAKDOWN (" + periodType + ") ===");
+        for (Map.Entry<String, Double> entry : periodTotals.entrySet()) {
+            System.out.printf("Period: %-12s | Revenue: RM%.2f%n", entry.getKey(), entry.getValue());
+        }
+        System.out.println("-----------------------------");
+    }
 }
