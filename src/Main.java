@@ -240,7 +240,7 @@ public class Main {
                     System.out.println("5. Sort by Amount (High -> Low)");
                     System.out.println("6. Sort by Amount (Low -> High)");
                     System.out.println("7. Sort by Customer Name");
-                    System.out.println("Choice: ");
+                    System.out.print("Choice: ");
 
                     String subChoice1 = scanner.nextLine();
                         switch(subChoice1) {
@@ -269,6 +269,7 @@ public class Main {
                                 break;
                             default:
                                 System.out.println("Invalid option.");
+                                showTable = false;
                                 break;
                         }
                     break;
@@ -281,7 +282,7 @@ public class Main {
                     System.out.println("2. Total Sales by DAY");
                     System.out.println("3. Total Sales by WEEK");
                     System.out.println("4. Total Sales by MONTH");
-                    System.out.println("Choice: ");
+                    System.out.print("Choice: ");
                     String subChoice2 = scanner.nextLine();
                         switch(subChoice2) {
                             case "1":

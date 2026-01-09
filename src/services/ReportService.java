@@ -81,7 +81,7 @@ public class ReportService {
 
         System.out.println("\n----AVERAGE DAILY REVENUE----");
         System.out.printf("Total Revenue: RM%.2f%n", totalRevenue);
-        System.out.printf("Active Days:   %d days%n" ,days.size());
+        System.out.printf("Active Days  : %d days%n" ,days.size());
         System.out.printf("Daily Average: RM%.2f / day%n" , average);
         System.out.println("-----------------------------");
     }
@@ -116,10 +116,10 @@ public class ReportService {
             periodTotals.put(key, periodTotals.getOrDefault(key, 0.0) + amount);
         }
 
-        System.out.println("\n=== SALES BREAKDOWN (" + periodType + ") ===");
+        System.out.println("\n----- SALES BREAKDOWN (" + periodType + ")-----");
         for (Map.Entry<String, Double> entry : periodTotals.entrySet()) {
             System.out.printf("Period: %-12s | Revenue: RM%.2f%n", entry.getKey(), entry.getValue());
         }
-        System.out.println("-----------------------------");
+        System.out.println("------------------------------------");
     }
 }
