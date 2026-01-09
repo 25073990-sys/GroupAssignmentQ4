@@ -2,7 +2,8 @@ package services;
 
 import models.Sale;
 import java.time.LocalDate;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ReportService {
@@ -59,4 +60,20 @@ public class ReportService {
             }
         }
     }
+//    public static void avgDailyRevenue(List<Sale> salesHistory,String periodType){
+//        if (salesHistory.isEmpty()){
+//            System.out.println("No sales available for analytics");
+//            return;
+//        }
+//        //Use Tree Map so dates sort automatically
+//        double totalRevenue = 0.0;
+//        Map<String,Double> periodTotals = new TreeMap<>();
+//        DateTimeFormatter week = DateTimeFormatter.ofPattern("w");
+//
+//        //Go through every sale one by one
+//        for (Sale s : salesHistory) {
+//            LocalDate currentDate = s.getTimestamp().toLocalDate();
+//            double amount = s.getTotal();
+//            String key = " ";
+//        }
 }
