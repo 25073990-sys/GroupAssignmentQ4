@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="openjfx.javafx.controls" type="repository">
+    <properties maven-id="org.openjfx:javafx-controls:25" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/javafx-controls-25.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javafx-controls-25-win.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javafx-graphics-25.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javafx-graphics-25-win.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javafx-base-25.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javafx-base-25-win.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

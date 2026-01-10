@@ -141,28 +141,56 @@ public class Main {
                         else if (editChoice.equals("2")) editService.editSales(scanner);
                         break;
 
-                    // ===== REGISTER =====
+                    // ===== REGISTER (FIXED) =====
                     case "6":
                         if (!currentUser.getRole().equalsIgnoreCase("Manager")) {
                             System.out.println("\n\u001B[31mACCESS DENIED\u001B[0m");
                             System.out.println("Only Managers can register new employees.");
                             break;
                         }
-                        System.out.println("\n--- REGISTER NEW EMPLOYEE ---");
-                        System.out.print("Employee ID: ");
-                        String newId = scanner.nextLine();
-                        System.out.print("Name: ");
-                        String name = scanner.nextLine();
-                        System.out.print("Password: ");
-                        String pw = scanner.nextLine();
-                        System.out.print("Role (Manager/Staff): ");
-                        String role = scanner.nextLine();
 
-                        Employee newEmp = new Employee(newId, name, role, pw);
+                        System.out.println("\n--- REGISTER NEW EMPLOYEE ---");
+                        System.out.println("(Type '0' at any prompt to Cancel)");
+
+                        // 1. Get ID (ADDED .toUpperCase() HERE)
+                        System.out.print("Employee ID: ");
+                        String newId = scanner.nextLine().trim().toUpperCase();
+
+                        if (newId.equals("0")) { System.out.println("Registration Cancelled."); break; }
+                        if (newId.isEmpty()) { System.out.println("\u001B[31mError: ID cannot be empty.\u001B[0m"); break; }
+
+                        // 2. Get Name
+                        System.out.print("Name: ");
+                        String name = scanner.nextLine().trim();
+                        if (name.equals("0")) { System.out.println("Registration Cancelled."); break; }
+                        if (name.isEmpty()) { System.out.println("\u001B[31mError: Name cannot be empty.\u001B[0m"); break; }
+
+                        // 3. Get Password
+                        System.out.print("Password: ");
+                        String pw = scanner.nextLine().trim();
+                        if (pw.equals("0")) { System.out.println("Registration Cancelled."); break; }
+                        if (pw.isEmpty()) { System.out.println("\u001B[31mError: Password cannot be empty.\u001B[0m"); break; }
+
+                        // 4. Get Role (with validation)
+                        System.out.print("Role (Manager/Full-time/Part-time): ");
+                        String roleInput = scanner.nextLine().trim();
+                        if (roleInput.equals("0")) { System.out.println("Registration Cancelled."); break; }
+
+                        // Normalize Role (Handle case insensitivity)
+                        String finalRole = "Staff"; // Default
+                        if (roleInput.equalsIgnoreCase("Manager")) finalRole = "Manager";
+                        else if (roleInput.equalsIgnoreCase("Full-time")) finalRole = "Full-time";
+                        else if (roleInput.equalsIgnoreCase("Part-time")) finalRole = "Part-time";
+                        else {
+                            System.out.println("\u001B[31mInvalid Role. Defaulting to 'Staff'.\u001B[0m");
+                        }
+
+                        // Register
+                        Employee newEmp = new Employee(newId, name, finalRole, pw);
                         if (authService.register(newEmp)) {
                             System.out.println("\u001B[32mEmployee registered successfully.\u001B[0m");
                         } else {
-                            System.out.println("\u001B[31mRegistration failed.\u001B[0m");
+                            System.out.println("\u001B[31mRegistration failed. ID might already exist.\u001B[0m");
                         }
                         break;
 
@@ -243,35 +271,35 @@ public class Main {
                     System.out.print("Choice: ");
 
                     String subChoice1 = scanner.nextLine();
-                        switch(subChoice1) {
-                            case "1": break;
-                            case "2":
-                                System.out.println("Enter Start Date (yyyy-MM-dd): ");
-                                LocalDate startDate = LocalDate.parse(scanner.nextLine());
-                                System.out.println("Enter End Date (yyyy-MM-dd): ");
-                                LocalDate endDate = LocalDate.parse(scanner.nextLine());
-                                displayList = ReportService.filterByDateRange(allSales,startDate,endDate);
-                                break;
-                            case "3":
-                                ReportService.sortSales(displayList,"date",false);
-                                break;
-                            case "4":
-                                ReportService.sortSales(displayList,"date",true);
-                                break;
-                            case "5":
-                                ReportService.sortSales(displayList,"amount",false);
-                                break;
-                            case "6":
-                                ReportService.sortSales(displayList, "amount", true);
-                                break;
-                            case "7":
-                                ReportService.sortSales(displayList, "customer", true);
-                                break;
-                            default:
-                                System.out.println("Invalid option.");
-                                showTable = false;
-                                break;
-                        }
+                    switch(subChoice1) {
+                        case "1": break;
+                        case "2":
+                            System.out.println("Enter Start Date (yyyy-MM-dd): ");
+                            LocalDate startDate = LocalDate.parse(scanner.nextLine());
+                            System.out.println("Enter End Date (yyyy-MM-dd): ");
+                            LocalDate endDate = LocalDate.parse(scanner.nextLine());
+                            displayList = ReportService.filterByDateRange(allSales,startDate,endDate);
+                            break;
+                        case "3":
+                            ReportService.sortSales(displayList,"date",false);
+                            break;
+                        case "4":
+                            ReportService.sortSales(displayList,"date",true);
+                            break;
+                        case "5":
+                            ReportService.sortSales(displayList,"amount",false);
+                            break;
+                        case "6":
+                            ReportService.sortSales(displayList, "amount", true);
+                            break;
+                        case "7":
+                            ReportService.sortSales(displayList, "customer", true);
+                            break;
+                        default:
+                            System.out.println("Invalid option.");
+                            showTable = false;
+                            break;
+                    }
                     break;
                 //===== DATA ANALYTICS =====
                 case "2":
@@ -284,23 +312,23 @@ public class Main {
                     System.out.println("4. Total Sales by MONTH");
                     System.out.print("Choice: ");
                     String subChoice2 = scanner.nextLine();
-                        switch(subChoice2) {
-                            case "1":
-                                ReportService.avgDailyRevenue(allSales);
-                                break;
-                            case "2":
-                                ReportService.salesByPeriod(allSales,"DAILY");
-                                break;
-                            case "3":
-                                ReportService.salesByPeriod(allSales,"WEEKLY");
-                                break;
-                            case "4":
-                                ReportService.salesByPeriod(allSales,"MONTHLY");
-                                break;
-                            default:
-                                System.out.println("Invalid option.");
-                        }
-                        break;
+                    switch(subChoice2) {
+                        case "1":
+                            ReportService.avgDailyRevenue(allSales);
+                            break;
+                        case "2":
+                            ReportService.salesByPeriod(allSales,"DAILY");
+                            break;
+                        case "3":
+                            ReportService.salesByPeriod(allSales,"WEEKLY");
+                            break;
+                        case "4":
+                            ReportService.salesByPeriod(allSales,"MONTHLY");
+                            break;
+                        default:
+                            System.out.println("Invalid option.");
+                    }
+                    break;
                 default:
                     System.out.println("Invalid main option.");
                     showTable = false;
@@ -335,7 +363,7 @@ public class Main {
                 System.out.println("------------------------------------------------------------------------------------------------");
             }
         } catch (Exception e){
-                System.out.println("Error processing report (Check date format yyyy-MM-dd): " + e.getMessage());
-            }
+            System.out.println("Error processing report (Check date format yyyy-MM-dd): " + e.getMessage());
+        }
     }
 }

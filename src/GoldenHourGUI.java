@@ -230,8 +230,9 @@ public class GoldenHourGUI extends Application {
 
         table.getColumns().addAll(nameCol, colorCol, priceCol, stockCol);
         table.setItems(FXCollections.observableArrayList(inventory));
-        // FIXED: Using non-deprecated constant
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        // FIXED: Compatible resize policy
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         vbox.getChildren().addAll(lbl, table);
         tab.setContent(vbox);
@@ -367,8 +368,9 @@ public class GoldenHourGUI extends Application {
 
         cartTable.getColumns().addAll(cModel, cQty, cPrice);
         cartTable.setItems(currentCart);
-        // FIXED: Using non-deprecated constant
-        cartTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        // FIXED: Compatible resize policy
+        cartTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         // Bottom: Total & Checkout
         HBox bottom = new HBox(20);
@@ -449,8 +451,9 @@ public class GoldenHourGUI extends Application {
         totalCol.setCellValueFactory(new PropertyValueFactory<>("total"));
 
         table.getColumns().addAll(dateCol, custCol, totalCol);
-        // FIXED: Using non-deprecated constant
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        // FIXED: Compatible resize policy
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         searchBtn.setOnAction(e -> {
             String key = searchField.getText().toLowerCase();
@@ -483,7 +486,9 @@ public class GoldenHourGUI extends Application {
         Button regBtn = new Button("Register Employee");
 
         regBtn.setOnAction(e -> {
-            Employee emp = new Employee(idTxt.getText(), nameTxt.getText(), roleBox.getValue(), passTxt.getText());
+            // FIXED: Added .toUpperCase() to ensure IDs like 'c6101' become 'C6101'
+            Employee emp = new Employee(idTxt.getText().toUpperCase(), nameTxt.getText(), roleBox.getValue(), passTxt.getText());
+
             if (authService.register(emp)) {
                 showAlert("Success", "Employee Registered.");
                 idTxt.clear(); nameTxt.clear();

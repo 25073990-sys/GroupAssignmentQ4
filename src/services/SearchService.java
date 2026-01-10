@@ -88,6 +88,7 @@ public class SearchService {
     // ==========================================
     public void searchSales(Scanner scanner) {
         System.out.println("\n=== Search Sales Information ===");
+        System.out.println("Criteria: Customer Name, Date (YYYY-MM-DD), Item Name, or Payment Method (e.g., 'Cash')");
         System.out.print("Search keyword: ");
         String keyword = scanner.nextLine().trim().toLowerCase();
 
@@ -99,9 +100,11 @@ public class SearchService {
         // Search in sales history
         if (salesHistory != null) {
             for (Sale sale : salesHistory) {
-                // Check Date, Customer Name, or Items
+                // Check Date, Customer Name, Payment Method, or Outlet Code
                 boolean match = sale.getCustomerName().toLowerCase().contains(keyword) ||
-                        sale.getTimestamp().toString().contains(keyword);
+                        sale.getTimestamp().toString().contains(keyword) ||
+                        sale.getMethod().toLowerCase().contains(keyword) || // Added check for Payment Method
+                        sale.getOutletCode().toLowerCase().contains(keyword);
 
                 if (!match) {
                     for (SaleItem item : sale.getItems()) {
